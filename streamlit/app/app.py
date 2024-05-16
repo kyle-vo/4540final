@@ -9,7 +9,7 @@ def load_data():
     all_pay = {}
     all_get = {}
 
-    table_names = ['ancestor_currency', 'affliction_currency']
+    table_names = ['sanctum_currency', 'crucible_currency', 'ancestor_currency', 'affliction_currency']
     for table_name in table_names:
         file_path = f'/storage/{table_name}_analysis.json'
         with open(file_path, 'r') as f:
@@ -25,13 +25,11 @@ def load_data():
                     if round(value, 2) != 0:
                         pay_chaos_orb_values[pay_currency] = round(value, 2)
                 elif pay_currency == "Chaos Orb":
-                    # Get Chaos Orb
                     if round(value, 2) != 0:
                         get_chaos_orb_values[get_currency] = round(value, 2)
             
             all_pay[table_name] = pay_chaos_orb_values
             all_get[table_name] = get_chaos_orb_values
-    # st.write(all_pay_chaos_orb_values)
     return all_pay, all_get
 
 def descending(chaos_orb_values, dataset, title):
@@ -111,7 +109,7 @@ def calculate_percentage(all_pay, all_get):
 
     return percentage_change_pay, earning_amounts_pay, percentage_change_get, earning_amounts_get
 
-def profit(top_currencies, percentage_change, earning, title):
+def percent_profit(top_currencies, percentage_change, earning, title):
     fig = go.Figure(data=[
         go.Bar(x=top_currencies, y=percentage_change, 
                text=[f"{change:.2f}% / Earn: {earning_amount:.2f}" for change, earning_amount in zip(percentage_change, earning)], 
@@ -119,9 +117,31 @@ def profit(top_currencies, percentage_change, earning, title):
     ])
     fig.update_layout(title=title, xaxis=dict(title='Currency'), yaxis=dict(title='Percentage Change'))
     st.plotly_chart(fig)
+
+# Plot most $ made on average
+def calculate_earn(earn_pay, earn_get):
+    earn_pay = earn_pay.round(2)
+    earn_get = earn_get.round(2)
     
+    top_pay = earn_pay.nlargest(10)
+    top_get = earn_get.nlargest(10)
+    
+    return top_pay, top_get
+
+def raw_profit(top, title):
+    fig = go.Figure(data=[
+        go.Bar(x=top.index, y=top.values, text=top.values, textposition='auto',
+                 hoverinfo='y', marker_color='blue')
+    ])
+    fig.update_layout(title=title, xaxis=dict(title='Currency'), yaxis=dict(title='Value'))
+    st.plotly_chart(fig)
+
 percentage_change_pay, earning_pay, percentage_change_get, earning_get = calculate_percentage(all_pay, all_get)
 top_pay = percentage_change_pay.nlargest(10).index
 top_get = percentage_change_get.nlargest(10).index
-profit(top_pay, percentage_change_pay[top_pay], earning_pay[top_pay],'Top Pay % Profit on Average')
-profit(top_get, percentage_change_get[top_get], earning_get[top_get],'Top Get % Profit on Average')
+percent_profit(top_pay, percentage_change_pay[top_pay], earning_pay[top_pay],'Top Pay % Profit on Average')
+percent_profit(top_get, percentage_change_get[top_get], earning_get[top_get],'Top Get % Profit on Average')
+
+top_earn_pay, top_earn_get = calculate_earn(earning_pay, earning_get)
+raw_profit(top_earn_pay, "Top Pay $ Profit on Average")
+raw_profit(top_earn_get, "Top Get $ Profit on Average")

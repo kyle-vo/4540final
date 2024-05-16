@@ -32,6 +32,7 @@ def load_data():
             all_get[table_name] = get_chaos_orb_values
     return all_pay, all_get
 
+# Graph descending
 def descending(chaos_orb_values, dataset, title):
     sorted_values = dict(sorted(chaos_orb_values.items(), key=lambda item: item[1], reverse=True))
     currencies = list(sorted_values.keys())
@@ -43,7 +44,8 @@ def descending(chaos_orb_values, dataset, title):
     fig.update_layout(yaxis=dict(range=[0, 25]))
     
     st.plotly_chart(fig)
-    
+  
+# Graph regular  
 def regular_pay(all_pay, dataset):
     df = pd.DataFrame(all_pay[dataset].items(), columns=['Currency', 'Average Value'])
     fig = pl.line(df, x='Currency', y='Average Value', title=f"Alphabetical Average Pay Values for {dataset}")
@@ -53,14 +55,14 @@ def regular_get(all_get, dataset):
     df = pd.DataFrame(all_get[dataset].items(), columns=['Currency', 'Average Value'])
     fig = pl.line(df, x='Currency', y='Average Value', title=f"Alphabetical Average Get Values for {dataset}")
     st.plotly_chart(fig)
-    
+
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 all_pay, all_get = load_data()
 
 selected_dataset = st.selectbox("Select Dataset", ["All"] + list(all_pay.keys()))
 
-# Plot Pay Chaos Orbs
+# Graph Pay Chaos Orbs
 if selected_dataset == "All":
     for dataset, pay_chaos_orb_values in all_pay.items():
         descending(pay_chaos_orb_values, dataset, f"Descending Average Pay Values for {dataset}")
@@ -69,7 +71,7 @@ else:
     descending(all_pay[selected_dataset], selected_dataset, f"Descending Average Pay Values for {selected_dataset}")
     regular_pay(all_pay, selected_dataset)
 
-# Plot Get Chaos Orbs
+# Graph Get Chaos Orbs
 if selected_dataset == "All":
     for dataset, get_chaos_orb_values in all_get.items():
         descending(get_chaos_orb_values, dataset, f"Descending Average Get Values for {dataset}")
@@ -78,7 +80,7 @@ else:
     descending(all_get[selected_dataset], selected_dataset, f"Descending Average Get Values for {selected_dataset}")
     regular_get(all_get, selected_dataset)
 
-# Plot best % profit from earliest to current
+# Calc best % profit from earliest to current
 def calculate_percentage(all_pay, all_get):
     all_pay_avg = {}
     all_get_avg = {}
@@ -109,6 +111,7 @@ def calculate_percentage(all_pay, all_get):
 
     return percentage_change_pay, earning_amounts_pay, percentage_change_get, earning_amounts_get
 
+# Graph best % profit from earliest to current
 def percent_profit(top_currencies, percentage_change, earning, title):
     fig = go.Figure(data=[
         go.Bar(x=top_currencies, y=percentage_change, 
@@ -118,7 +121,7 @@ def percent_profit(top_currencies, percentage_change, earning, title):
     fig.update_layout(title=title, xaxis=dict(title='Currency'), yaxis=dict(title='Percentage Change'))
     st.plotly_chart(fig)
 
-# Plot most $ made on average
+# Calc most $ made on average
 def calculate_earn(earn_pay, earn_get):
     earn_pay = earn_pay.round(2)
     earn_get = earn_get.round(2)
@@ -128,6 +131,7 @@ def calculate_earn(earn_pay, earn_get):
     
     return top_pay, top_get
 
+# Graph most $ made on average
 def raw_profit(top, title):
     fig = go.Figure(data=[
         go.Bar(x=top.index, y=top.values, text=top.values, textposition='auto',
